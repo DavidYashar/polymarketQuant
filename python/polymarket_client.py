@@ -36,6 +36,9 @@ def _request(method: str, url: str, *, params=None, json_body=None, timeout=DEFA
             if resp.status_code in RETRYABLE_STATUS:
                 time.sleep(min(8.0, 0.5 * (2 ** attempt)))
                 continue
+            # 404 is expected for hours with no Polymarket market - signal to caller
+            if resp.status_code == 404:
+                return None
             resp.raise_for_status()
             if not resp.content:
                 return None
@@ -70,13 +73,7 @@ class GammaClient:
     def get_event_by_slug(self, slug: str) -> dict | None:
         """Returns the event dict (with nested `markets`) or None if not found."""
         url = f"{self.host}/events/slug/{slug}"
-        try:
-            return _request("GET", url)
-        except RuntimeError as exc:
-            # 404s come through as raise_for_status -> RuntimeError; treat as missing
-            if "404" in str(exc):
-                return None
-            raise
+        return _request("GET", url)
 
     def list_markets(self, *, closed: bool | None = None, limit: int = 500, offset: int = 0,
                      tag: str | None = None) -> list[dict]:
@@ -189,12 +186,11 @@ def hour_to_et_label(hour_24: int) -> str:
 def hourly_slug(coin: str, year: int, month_1to12: int, day: int, hour_et_24: int) -> str:
     """Build the deterministic Polymarket hourly slug for a given coin and ET hour.
 
-    NOTE: year is not in the slug because Polymarket only keeps recent markets
-    in the active set, but historical ones still resolve via this same slug
-    pattern. Caller is responsible for filtering out duplicates from prior years.
+    Verified pattern (April 2026): `{coin}-up-or-down-{month}-{day}-{year}-{hour}{am|pm}-et`
+    e.g. `bitcoin-up-or-down-may-1-2026-9am-et`.
     """
     coin_name = COIN_SLUG_NAMES[coin.upper()]
-    return f"{coin_name}-up-or-down-{MONTHS[month_1to12 - 1]}-{day}-{hour_to_et_label(hour_et_24)}-et"
+    return f"{coin_name}-up-or-down-{MONTHS[month_1to12 - 1]}-{day}-{year}-{hour_to_et_label(hour_et_24)}-et"
 
 
 __all__ = [
