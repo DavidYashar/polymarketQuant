@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*
+!.env.example
+!**/.env.example
+data/state.json
+*.log
+logs/*.jsonl
+logs/*.log
+
+# Python venvs and caches (we run on Ubuntu; Windows .venv is local-only)
+.venv/
+python/.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Calibration outputs that shouldn't be committed
+/tmp/
+*.csv

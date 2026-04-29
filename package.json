@@ -1,0 +1,22 @@
+{
+  "name": "polymarket-bot",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "data:prune": "node ./node_modules/tsx/dist/cli.mjs src/cleanSnapshots.ts -- data",
+    "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@polymarket/clob-client": "^5.2.1",
+    "dotenv": "^16.4.5",
+    "tslib": "^2.6.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "@types/ws": "^8.5.12",
+    "tsx": "^4.19.2",
+    "typescript": "^5.3.3"
+  }
+}
